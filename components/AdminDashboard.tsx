@@ -1176,7 +1176,7 @@ const handleApproveRecon = (id: string, notes: string) => {
                 <div>
                   <h2 className="text-xs font-black tracking-widest text-teal-400 uppercase leading-none">INYATHI</h2>
                   <p className="text-xs font-semibold text-slate-400 leading-none mt-1">{admin.name}</p>
-                  <p className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mt-0.5">Luqmaan ADMIN PORTAL</p>
+                  <p className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mt-0.5">ADMIN PORTAL</p>
                 </div>
               </div>
               <button
