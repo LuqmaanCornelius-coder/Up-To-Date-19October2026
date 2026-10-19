@@ -2373,49 +2373,53 @@ if (combined.length > 0 && !checklistForm.vehicle_reg) {
           );
         })()}
 
-        {/* ==================== VEHICLE CHECKLISTS TAB ==================== */}
+               {/* ==================== VEHICLE CHECKLISTS TAB (Rental Inspection Photos – from PDF) ==================== */}
         {activeTab === 'checklists' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold flex items-center gap-1.5">
-                <ClipboardCheck className="w-5 h-5 text-teal-500 animate-pulse" />
-                Weekly Vehicle Checklist Audit
+                <Camera className="w-5 h-5 text-teal-500 animate-pulse" />
+                Rental Inspection Photos Checklist
               </h2>
             </div>
             <p className="text-[10px] text-slate-400">
-              Submit your standard 12-point weekly safety checklist audit for compliance records. Use OK or WARN (Action Required) to log actual condition.
+              Match the official Rental Inspection Sheet. Tick OUT (handover) and IN (return) for each required photo and upload the image. Required views: 4 tyres, spare + rim, and 4 vehicle angles.
             </p>
-{/* Vehicle Selection */}
-<div>
-  <span className="text-[10px] text-slate-400 block mb-1">
-    Vehicle <span className="text-rose-400">*</span>
-  </span>
-  <select
-    required
-    value={checklistForm.vehicle_reg || ''}
-    onChange={(e) => setChecklistForm(prev => ({ ...prev, vehicle_reg: e.target.value }))}
-    className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-white"
-  >
-    <option value="" disabled>Select a vehicle...</option>
-    {checklistVehicleOptions.map(opt => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
-    ))}
-  </select>
-</div>
+
+            {/* Vehicle Selection */}
+            <div>
+              <span className="text-[10px] text-slate-400 block mb-1">
+                Vehicle <span className="text-rose-400">*</span>
+              </span>
+              <select
+                required
+                value={checklistForm.vehicle_reg || ''}
+                onChange={(e) => setChecklistForm(prev => ({ ...prev, vehicle_reg: e.target.value }))}
+                className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-white"
+              >
+                <option value="" disabled>Select a vehicle...</option>
+                {checklistVehicleOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 shadow-lg space-y-3">
               <form onSubmit={submitPeriodicChecklist} className="space-y-3 text-xs">
                 <div className="grid grid-cols-2 gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-800">
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-1">Current Mileage (km)</span>
+                    <span className="text-[10px] text-slate-400 block mb-1">Current Mileage / Odo (km)</span>
                     <input
-                      type="number" required placeholder="e.g. 124000"
+                      type="number"
+                      required
+                      placeholder="e.g. 124000"
                       value={checklistForm.mileage || ''}
                       onChange={(e) => setChecklistForm(prev => ({ ...prev, mileage: Number(e.target.value) }))}
                       className="w-full bg-slate-950 border border-slate-800 rounded p-1 text-xs text-white"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-1">Start Date</span>
+                    <span className="text-[10px] text-slate-400 block mb-1">Date</span>
                     <input
                       type="date"
                       value={checklistForm.week_start}
@@ -2425,37 +2429,81 @@ if (combined.length > 0 && !checklistForm.vehicle_reg) {
                   </div>
                 </div>
 
-                {/* 12 check points rating */}
+                {/* Required photos from Rental Inspection Sheet PDF */}
                 <div className="space-y-1.5 border border-slate-800 rounded bg-slate-900/60 p-2">
-                  <p className="text-[9px] uppercase font-bold text-slate-400 border-b border-slate-800 pb-1 mb-1.5">Rating Audit</p>
-                  
-                  {Object.keys(checklistForm.checklist_data || {}).map(key => {
-                    const cleanKey = key.replace(/_/g, ' ');
-                    const ratingValue = (checklistForm.checklist_data as any)[key];
-                    const isOk = ratingValue === 'ok';
+                  <p className="text-[9px] uppercase font-bold text-slate-400 border-b border-slate-800 pb-1 mb-1.5">
+                    Did you take the following important photos? (OUT / IN)
+                  </p>
+
+                  {PHOTO_CHECKLIST_BASE.map(base => {
+                    const label = base.replace(/_/g, ' ').toUpperCase();
+                    const outKey = `${base}_out`;
+                    const inKey = `${base}_in`;
+                    const outVal = (checklistForm.checklist_data as any)?.[outKey];
+                    const inVal = (checklistForm.checklist_data as any)?.[inKey];
+                    const outOk = outVal === 'ok';
+                    const inOk = inVal === 'ok';
+                    const outUrl = (checklistForm.photo_urls || {})[outKey];
+                    const inUrl = (checklistForm.photo_urls || {})[inKey];
 
                     return (
-                      <div key={key} className="flex justify-between items-center text-[10px] py-1 border-b border-slate-950 last:border-0">
-                        <span className="text-slate-300 capitalize">{cleanKey}</span>
-                        <div className="flex gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleChecklistValueChange(key, 'ok')}
-                            className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold cursor-pointer ${
-                              isOk ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}
-                          >
-                            OK
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleChecklistValueChange(key, key.includes('tyre') || key.includes('light') ? 'action' : 'low')}
-                            className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold cursor-pointer ${
-                              !isOk ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}
-                          >
-                            WARN
-                          </button>
+                      <div key={base} className="py-1.5 border-b border-slate-950 last:border-0 space-y-1">
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-slate-300 font-medium">{label}</span>
+                          <div className="flex gap-1.5 items-center">
+                            <button
+                              type="button"
+                              onClick={() => handleChecklistValueChange(outKey, outOk ? 'missing' : 'ok')}
+                              className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold cursor-pointer ${
+                                outOk ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                              }`}
+                            >
+                              OUT
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleChecklistValueChange(inKey, inOk ? 'missing' : 'ok')}
+                              className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold cursor-pointer ${
+                                inOk ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                              }`}
+                            >
+                              IN
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 items-center flex-wrap">
+                          <label className="flex items-center gap-1 cursor-pointer text-[9px] text-slate-400 hover:text-teal-400">
+                            <Camera className="w-3 h-3" />
+                            {uploadingChecklistPhoto[outKey] ? 'Uploading OUT…' : 'Upload OUT photo'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              capture="environment"
+                              className="hidden"
+                              onChange={(e) => handleChecklistPhotoUpload(outKey, e)}
+                            />
+                          </label>
+                          {outUrl && (
+                            <a href={outUrl} target="_blank" rel="noreferrer" className="text-[9px] text-emerald-400 underline">
+                              View OUT
+                            </a>
+                          )}
+                          <label className="flex items-center gap-1 cursor-pointer text-[9px] text-slate-400 hover:text-teal-400">
+                            <Camera className="w-3 h-3" />
+                            {uploadingChecklistPhoto[inKey] ? 'Uploading IN…' : 'Upload IN photo'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              capture="environment"
+                              className="hidden"
+                              onChange={(e) => handleChecklistPhotoUpload(inKey, e)}
+                            />
+                          </label>
+                          {inUrl && (
+                            <a href={inUrl} target="_blank" rel="noreferrer" className="text-[9px] text-emerald-400 underline">
+                              View IN
+                            </a>
+                          )}
                         </div>
                       </div>
                     );
@@ -2463,7 +2511,7 @@ if (combined.length > 0 && !checklistForm.vehicle_reg) {
                 </div>
 
                 <textarea
-                  placeholder="Notes / Issues noticed during audit checklist"
+                  placeholder="Notes / damages / issues noticed (record scratches, dents on diagrams if needed)"
                   value={checklistForm.notes}
                   onChange={(e) => setChecklistForm(prev => ({ ...prev, notes: e.target.value }))}
                   className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white h-12"
@@ -2473,7 +2521,7 @@ if (combined.length > 0 && !checklistForm.vehicle_reg) {
                   type="submit"
                   className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 rounded-lg text-xs transition-colors cursor-pointer"
                 >
-                  File Checklist
+                  File Photo Checklist
                 </button>
               </form>
             </div>
